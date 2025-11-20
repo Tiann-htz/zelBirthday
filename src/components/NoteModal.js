@@ -4,6 +4,15 @@ import Image from 'next/image';
 
 export default function NoteModal({ isOpen, onClose }) {
   const [showStickers, setShowStickers] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [stickerPositions, setStickerPositions] = useState([
+   { top: '-35px', left: '-25px', rotate: -15, delay: 0 },
+    { top: '-30px', right: '-20px', rotate: 12, delay: 0.2 },
+    { top: '35%', left: '-20px', rotate: -10, delay: 0.4 },
+    { top: '50%', right: '-15px', rotate: 15, delay: 0.6 },
+    { bottom: '110px', left: '-10px', rotate: 8, delay: 0.8 },
+    { bottom: '-35px', right: '-10px', rotate: -12, delay: 1 },
+  ]);
 
   useEffect(() => {
     if (isOpen) {
@@ -15,6 +24,7 @@ export default function NoteModal({ isOpen, onClose }) {
     } else {
       document.body.style.overflow = 'unset';
       setShowStickers(false);
+      setSelectedImage(null);
     }
     return () => {
       document.body.style.overflow = 'unset';
@@ -27,14 +37,52 @@ export default function NoteModal({ isOpen, onClose }) {
     }
   };
 
-  const stickerPositions = [
-    { top: '-35px', left: '-25px', rotate: -15, delay: 0 },
-    { top: '-30px', right: '-20px', rotate: 12, delay: 0.2 },
-    { top: '35%', left: '-20px', rotate: -10, delay: 0.4 },
-    { top: '50%', right: '-15px', rotate: 15, delay: 0.6 },
-    { bottom: '110px', left: '-10px', rotate: 8, delay: 0.8 },
-    { bottom: '-35px', right: '-10px', rotate: -12, delay: 1 },
-  ];
+  const handleImageClick = (index, e) => {
+    e.stopPropagation();
+    console.log(`🖼️ Image ${index + 1} clicked, opening preview...`);
+    setSelectedImage(index);
+  };
+
+  const handleImageModalClick = (e) => {
+    if (e.target === e.currentTarget) {
+      console.log('🖼️ Image preview closed');
+      setSelectedImage(null);
+    }
+  };
+
+  const handleDragEnd = (index, event, info) => {
+    const newPositions = [...stickerPositions];
+    const currentPos = newPositions[index];
+    
+    if (currentPos.top && currentPos.left) {
+      newPositions[index] = {
+        ...currentPos,
+        top: `calc(${currentPos.top} + ${info.offset.y}px)`,
+        left: `calc(${currentPos.left} + ${info.offset.x}px)`,
+      };
+    } else if (currentPos.top && currentPos.right) {
+      newPositions[index] = {
+        ...currentPos,
+        top: `calc(${currentPos.top} + ${info.offset.y}px)`,
+        right: `calc(${currentPos.right} - ${info.offset.x}px)`,
+      };
+    } else if (currentPos.bottom && currentPos.left) {
+      newPositions[index] = {
+        ...currentPos,
+        bottom: `calc(${currentPos.bottom} - ${info.offset.y}px)`,
+        left: `calc(${currentPos.left} + ${info.offset.x}px)`,
+      };
+    } else if (currentPos.bottom && currentPos.right) {
+      newPositions[index] = {
+        ...currentPos,
+        bottom: `calc(${currentPos.bottom} - ${info.offset.y}px)`,
+        right: `calc(${currentPos.right} - ${info.offset.x}px)`,
+      };
+    }
+    
+    setStickerPositions(newPositions);
+    console.log(`📍 Sticker ${index + 1} moved to new position`);
+  };
 
   return (
     <AnimatePresence>
@@ -52,13 +100,13 @@ export default function NoteModal({ isOpen, onClose }) {
             exit={{ scale: 0, rotate: 10 }}
             transition={{ type: "spring", duration: 0.5 }}
             className="relative"
+            onClick={(e) => e.stopPropagation()}
           >
             <div
               className="bg-amber-50 rounded-lg shadow-2xl max-w-md w-full max-h-[85vh] overflow-y-auto p-8 relative"
               style={{
                 backgroundImage: 'linear-gradient(to bottom, #fffbeb 0%, #fef3c7 100%)',
               }}
-              onClick={(e) => e.stopPropagation()}
             >
               <button
                 onClick={onClose}
@@ -107,7 +155,7 @@ export default function NoteModal({ isOpen, onClose }) {
                   <p className="text-lg leading-relaxed text-right italic">
                     Forever yours,
                     <br />
-                    Your Love - Tian
+                    Your Love
                   </p>
                 </motion.div>
 
@@ -140,7 +188,13 @@ export default function NoteModal({ isOpen, onClose }) {
                   type: "spring",
                   stiffness: 200
                 }}
-                className="absolute rounded-lg shadow-xl overflow-hidden"
+                drag
+                dragMomentum={false}
+                dragElastic={0.1}
+                onDragEnd={(event, info) => handleDragEnd(index, event, info)}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95, cursor: 'grabbing' }}
+                className="absolute rounded-lg shadow-xl overflow-hidden cursor-grab active:cursor-grabbing"
                 style={{
                   top: pos.top,
                   bottom: pos.bottom,
@@ -150,19 +204,49 @@ export default function NoteModal({ isOpen, onClose }) {
                   height: '80px',
                   zIndex: 60,
                 }}
+                onClick={(e) => handleImageClick(index, e)}
               >
                 <Image
                   src={`/Aizel/aizel${index + 1}.jpeg`}
                   alt={`Sticker ${index + 1}`}
                   width={80}
                   height={80}
-                  className="object-cover rounded-lg border-4 border-white shadow-2xl"
+                  className="object-cover rounded-lg border-4 border-white shadow-2xl pointer-events-none"
                 />
               </motion.div>
             ))}
           </motion.div>
         </motion.div>
       )}
+
+      <AnimatePresence>
+        {selectedImage !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-80 z-[100] flex items-center justify-center p-4"
+            onClick={handleImageModalClick}
+          >
+            <motion.div
+              initial={{ scale: 0, rotate: -10 }}
+              animate={{ scale: 1, rotate: 0 }}
+              exit={{ scale: 0, rotate: 10 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="relative max-w-2xl w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Image
+                src={`/Aizel/aizel${selectedImage + 1}.jpeg`}
+                alt={`Full view ${selectedImage + 1}`}
+                width={800}
+                height={800}
+                className="object-contain rounded-2xl shadow-2xl border-8 border-white w-full h-auto max-h-[80vh]"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </AnimatePresence>
   );
 }
