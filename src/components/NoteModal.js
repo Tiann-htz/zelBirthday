@@ -122,7 +122,7 @@ export default function NoteModal({ isOpen, onClose }) {
                   transition={{ delay: 0.3 }}
                   className="text-3xl font-bold text-purple-700 text-center mb-6"
                 >
-                  Happy Birthday Babe! 🎉
+                  Happy Birthday Babe! 🎂
                 </motion.h2>
 
                 <motion.div
@@ -149,13 +149,13 @@ export default function NoteModal({ isOpen, onClose }) {
                   </p>
 
                   <p className="text-xl leading-relaxed text-center font-bold text-purple-900 mt-6">
-                    I love you more than words can say. 💜
+                    I love you more than words can say. 💖
                   </p>
 
                   <p className="text-lg leading-relaxed text-right italic">
                     Forever yours,
                     <br />
-                    Your Love
+                    Your Love - Tiann
                   </p>
                 </motion.div>
 
