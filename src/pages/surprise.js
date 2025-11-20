@@ -3,11 +3,13 @@ import { motion } from 'framer-motion';
 import Confetti from 'react-confetti';
 import Image from 'next/image';
 import Head from 'next/head';
+import NoteModal from '../components/NoteModal';
 
 export default function Surprise() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
   const [visibleImages, setVisibleImages] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const backgroundGradient = 'bg-gradient-to-br from-purple-200 via-purple-300 to-purple-400';
 
@@ -25,8 +27,8 @@ export default function Surprise() {
 
   const cakeWidthDesktop = 450;
   const cakeHeightDesktop = 385;
-  const cakeWidthMobile = 200;
-  const cakeHeightMobile = 171;
+  const cakeWidthMobile = 260;
+  const cakeHeightMobile = -520;
   const cakeOffsetRightDesktop = -150;
   const cakeOffsetBottomDesktop = -2;
 
@@ -58,12 +60,12 @@ export default function Surprise() {
   ];
 
   const imagePositionsMobile = [
-    { top: '5%', left: '3%' },
-    { top: '5%', right: '3%' },
-    { top: '35%', left: '2%' },
-    { top: '35%', right: '2%' },
-    { bottom: '5%', left: '3%' },
-    { bottom: '5%', right: '3%' },
+    { top: '8%', left: '5%' },
+    { top: '8%', right: '5%' },
+    { top: '50%', left: '3%', transform: 'translateY(-50%)' },
+    { top: '50%', right: '3%', transform: 'translateY(-50%)' },
+    { bottom: '8%', left: '5%' },
+    { bottom: '8%', right: '5%' },
   ];
 
   useEffect(() => {
@@ -125,6 +127,16 @@ export default function Surprise() {
     };
   }, []);
 
+  const handleNoteClick = () => {
+    console.log('📝 Note clicked, opening modal...');
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    console.log('📝 Modal closed');
+    setIsModalOpen(false);
+  };
+
   const allImagesVisible = visibleImages.length === totalImages;
 
   return (
@@ -168,11 +180,12 @@ export default function Surprise() {
               delay: noteZoomDuration,
             }
           }}
-          className="z-10 relative hidden md:block"
+          className="z-10 relative hidden md:block cursor-pointer"
           style={{ 
             width: noteWidthDesktop, 
             height: noteHeightDesktop,
           }}
+          onClick={handleNoteClick}
           onAnimationStart={() => console.log('📝 Note zoom in animation started')}
           onAnimationComplete={() => console.log('📝 Note zoom complete, now bouncing')}
         >
@@ -240,8 +253,8 @@ export default function Surprise() {
             }}
             className="absolute"
             style={{
-              bottom: '25%',
-              left: '-30px',
+              bottom: '75%',
+              left: '-60px',
               width: bear2SizeDesktop,
               height: bear2SizeDesktop,
               zIndex: 25,
@@ -277,8 +290,8 @@ export default function Surprise() {
             }}
             className="absolute"
             style={{
-              top: '20%',
-              left: '340px',
+              top: '-15%',
+              left: '440px',
               width: bear3SizeDesktop,
               height: bear3SizeDesktop,
               zIndex: 25,
@@ -313,11 +326,12 @@ export default function Surprise() {
               delay: noteZoomDuration,
             }
           }}
-          className="z-10 relative block md:hidden"
+          className="z-30 relative block md:hidden cursor-pointer"
           style={{ 
             width: noteWidthMobile, 
             height: noteHeightMobile,
           }}
+          onClick={handleNoteClick}
         >
           <Image
             src="/Images/note.png"
@@ -346,7 +360,7 @@ export default function Surprise() {
             }}
             className="absolute"
             style={{
-              top: '-10px',
+              top: '-5px',
               left: '-45px',
               width: bear1SizeMobile,
               height: bear1SizeMobile,
@@ -491,10 +505,10 @@ export default function Surprise() {
               delay: 2
             }
           }}
-          className="absolute z-20 block md:hidden"
+          className="absolute z-40 block md:hidden"
           style={{
-            bottom: '50px',
-            right: '20px',
+            top: '40%',
+            right: '15px',
             width: cakeWidthMobile,
             height: cakeHeightMobile,
           }}
@@ -556,49 +570,6 @@ export default function Surprise() {
           </motion.div>
         ))}
 
-        {visibleImages.map((imageIndex) => (
-          <motion.div
-            key={`aizel-mobile-${imageIndex}`}
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={
-              allImagesVisible
-                ? {
-                    opacity: 1,
-                    scale: [1, 1.1, 1],
-                  }
-                : { opacity: 1, scale: 1 }
-            }
-            transition={
-              allImagesVisible
-                ? {
-                    opacity: { duration: 0.5 },
-                    scale: {
-                      duration: breathAnimationSpeed,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                      delay: imageIndex * 0.2,
-                    },
-                  }
-                : { duration: 1, ease: "easeOut" }
-            }
-            className="absolute rounded-lg shadow-xl overflow-hidden block md:hidden"
-            style={{
-              ...imagePositionsMobile[imageIndex],
-              width: imageWidthMobile,
-              height: imageHeightMobile,
-              zIndex: 20 + imageIndex,
-            }}
-          >
-            <Image
-              src={`/Aizel/aizel${imageIndex + 1}.jpeg`}
-              alt={`Aizel ${imageIndex + 1}`}
-              width={imageWidthMobile}
-              height={imageHeightMobile}
-              className="object-cover rounded-lg"
-            />
-          </motion.div>
-        ))}
-
         {[...Array(8)].map((_, i) => (
           <motion.div
             key={i}
@@ -613,13 +584,39 @@ export default function Surprise() {
               repeat: Infinity,
               delay: i * 0.7
             }}
-            className="absolute text-3xl md:text-4xl"
+            className="absolute text-3xl md:text-4xl hidden md:block"
             style={{ left: `${5 + i * 12}%`, zIndex: 5 }}
           >
             💜
           </motion.div>
         ))}
+
+        {[...Array(8)].map((_, i) => (
+          <motion.div
+            key={`mobile-heart-${i}`}
+            initial={{ opacity: 0, y: windowSize.height }}
+            animate={{
+              opacity: [0, 1, 0],
+              y: [windowSize.height, -50],
+              x: [0, (i % 2 === 0 ? 30 : -30)]
+            }}
+            transition={{
+              duration: 6 + i,
+              repeat: Infinity,
+              delay: i * 0.8
+            }}
+            className="absolute text-3xl block md:hidden"
+            style={{ left: `${10 + i * 12}%`, zIndex: 3 }}
+          >
+            💜
+          </motion.div>
+        ))}
       </div>
+
+      <NoteModal 
+        isOpen={isModalOpen} 
+        onClose={handleModalClose}
+      />
     </>
   );
 }
